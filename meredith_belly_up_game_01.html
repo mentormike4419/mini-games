@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Meredith, want to go out?</title>
+  <style>
+    :root {
+      --cream: #fff8e8;
+      --gold: #f3b63f;
+      --orange: #e76f31;
+      --wine: #70293b;
+      --ink: #281b20;
+      --green: #2f7d5b;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      overflow: hidden;
+      display: grid;
+      place-items: center;
+      padding: 18px;
+      font-family: Arial, Helvetica, sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 15% 20%, rgba(243,182,63,.55), transparent 28%),
+        radial-gradient(circle at 85% 75%, rgba(231,111,49,.42), transparent 30%),
+        linear-gradient(135deg, #3a1722, #7b2f3c 55%, #c55c37);
+    }
+
+    .card {
+      position: relative;
+      width: min(700px, 96vw);
+      min-height: min(620px, 90vh);
+      padding: 34px 28px;
+      border: 3px solid rgba(255,255,255,.5);
+      border-radius: 28px;
+      background: rgba(255,248,232,.96);
+      box-shadow: 0 25px 80px rgba(0,0,0,.38);
+      text-align: center;
+      overflow: hidden;
+    }
+
+    .record {
+      width: 96px;
+      height: 96px;
+      margin: 0 auto 14px;
+      border-radius: 50%;
+      background:
+        radial-gradient(circle, var(--gold) 0 9%, #fff 10% 12%, #111 13% 28%, #333 29% 31%, #111 32% 48%, #333 49% 51%, #111 52% 100%);
+      box-shadow: 0 8px 18px rgba(0,0,0,.28);
+      animation: spin 7s linear infinite;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .eyebrow {
+      margin: 0 0 7px;
+      color: var(--orange);
+      font-size: .82rem;
+      font-weight: 800;
+      letter-spacing: .18em;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      margin: 0;
+      color: var(--wine);
+      font-size: clamp(2rem, 7vw, 3.6rem);
+      line-height: .98;
+    }
+
+    .question {
+      max-width: 590px;
+      margin: 18px auto 15px;
+      font-size: clamp(1.18rem, 3vw, 1.5rem);
+      line-height: 1.45;
+    }
+
+    .event {
+      display: inline-grid;
+      gap: 5px;
+      margin: 5px auto 24px;
+      padding: 14px 20px;
+      border-radius: 16px;
+      background: #f7e4ba;
+      box-shadow: inset 0 0 0 1px rgba(112,41,59,.12);
+    }
+
+    .event strong { color: var(--wine); font-size: 1.22rem; }
+    .event span { font-size: .96rem; }
+
+    .arena {
+      position: relative;
+      height: 170px;
+      width: 100%;
+      max-width: 600px;
+      margin: 0 auto;
+      border-radius: 22px;
+      background: rgba(112,41,59,.06);
+      border: 2px dashed rgba(112,41,59,.2);
+    }
+
+    button {
+      position: absolute;
+      min-width: 125px;
+      padding: 15px 24px;
+      border: 0;
+      border-radius: 999px;
+      font-size: 1.08rem;
+      font-weight: 800;
+      cursor: pointer;
+      box-shadow: 0 8px 18px rgba(0,0,0,.18);
+      transition: transform .15s ease, box-shadow .15s ease;
+      touch-action: manipulation;
+    }
+
+    button:focus-visible { outline: 4px solid rgba(47,125,91,.35); }
+
+    #yesBtn {
+      left: 18%;
+      top: 58px;
+      color: white;
+      background: var(--green);
+    }
+
+    #yesBtn:hover { transform: scale(1.08); box-shadow: 0 12px 24px rgba(0,0,0,.24); }
+
+    #noBtn {
+      right: 18%;
+      top: 58px;
+      color: white;
+      background: var(--wine);
+      transition: left .12s ease, top .12s ease, transform .12s ease;
+    }
+
+    .hint {
+      margin: 16px 0 0;
+      color: #765963;
+      font-size: .86rem;
+    }
+
+    .success {
+      display: none;
+      position: absolute;
+      inset: 0;
+      z-index: 10;
+      place-items: center;
+      padding: 30px;
+      background: linear-gradient(145deg, #fff8e8, #f7ddb1);
+    }
+
+    .success.show { display: grid; }
+
+    .success h2 {
+      margin: 0 0 12px;
+      color: var(--wine);
+      font-size: clamp(2.4rem, 9vw, 5rem);
+    }
+
+    .success p {
+      max-width: 520px;
+      margin: 8px auto;
+      font-size: clamp(1.1rem, 3.5vw, 1.45rem);
+      line-height: 1.5;
+    }
+
+    .ticket {
+      margin-top: 22px;
+      padding: 18px 22px;
+      border: 2px dashed var(--wine);
+      border-radius: 14px;
+      background: white;
+      font-weight: 700;
+    }
+
+    .confetti {
+      position: fixed;
+      top: -20px;
+      width: 10px;
+      height: 18px;
+      opacity: .9;
+      animation: fall linear forwards;
+      z-index: 50;
+    }
+
+    @keyframes fall {
+      to { transform: translateY(110vh) rotate(900deg); }
+    }
+
+    @media (max-width: 520px) {
+      .card { padding: 25px 16px; min-height: 600px; }
+      .arena { height: 190px; }
+      #yesBtn { left: 8%; top: 65px; }
+      #noBtn { right: 8%; top: 65px; }
+      button { min-width: 112px; padding: 14px 18px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="card" id="card">
+    <div class="record" aria-hidden="true"></div>
+    <p class="eyebrow">A very important question</p>
+    <h1>Hey Meredith...</h1>
+
+    <p class="question">
+      Would you like to go out with me to see <strong>Monophonics</strong> at the Belly Up?
+    </p>
+
+    <div class="event" aria-label="Event details">
+      <strong>Monophonics + Kendra Morris</strong>
+      <span>Thursday, July 23, 2026</span>
+      <span>Doors 7:00 PM · Show 8:00 PM · Belly Up, Solana Beach</span>
+    </div>
+
+    <section class="arena" id="arena" aria-label="Answer choices">
+      <button id="yesBtn" type="button">Yes!</button>
+      <button id="noBtn" type="button">No</button>
+    </section>
+
+    <p class="hint" id="hint">Choose carefully. One answer may be slightly harder to click.</p>
+
+    <section class="success" id="success" aria-live="polite">
+      <div>
+        <h2>Excellent choice!</h2>
+        <p>It’s a date. Great music, Belly Up, and a night out with Mike.</p>
+        <div class="ticket">
+          MEREDITH + MIKE<br>
+          MONOPHONICS · JULY 23 · 8:00 PM
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const arena = document.getElementById('arena');
+    const noBtn = document.getElementById('noBtn');
+    const yesBtn = document.getElementById('yesBtn');
+    const success = document.getElementById('success');
+    const hint = document.getElementById('hint');
+    let escapes = 0;
+
+    function moveNoButton() {
+      const arenaRect = arena.getBoundingClientRect();
+      const btnRect = noBtn.getBoundingClientRect();
+      const padding = 8;
+      const maxX = Math.max(padding, arenaRect.width - btnRect.width - padding);
+      const maxY = Math.max(padding, arenaRect.height - btnRect.height - padding);
+
+      const x = padding + Math.random() * (maxX - padding);
+      const y = padding + Math.random() * (maxY - padding);
+
+      noBtn.style.left = `${x}px`;
+      noBtn.style.top = `${y}px`;
+      noBtn.style.right = 'auto';
+      escapes++;
+
+      const messages = [
+        'Nice try.',
+        'That button seems nervous.',
+        'It really does not want to be clicked.',
+        'The universe is sending a message.',
+        'There appears to be only one practical answer.'
+      ];
+      hint.textContent = messages[Math.min(escapes - 1, messages.length - 1)];
+    }
+
+    ['mouseenter', 'pointerdown', 'touchstart', 'focus'].forEach(eventName => {
+      noBtn.addEventListener(eventName, event => {
+        event.preventDefault();
+        moveNoButton();
+        noBtn.blur();
+      }, { passive: false });
+    });
+
+    noBtn.addEventListener('click', event => {
+      event.preventDefault();
+      moveNoButton();
+    });
+
+    yesBtn.addEventListener('click', () => {
+      success.classList.add('show');
+      launchConfetti();
+    });
+
+    function launchConfetti() {
+      const colors = ['#70293b', '#e76f31', '#f3b63f', '#2f7d5b', '#ffffff'];
+      for (let i = 0; i < 110; i++) {
+        const piece = document.createElement('div');
+        piece.className = 'confetti';
+        piece.style.left = `${Math.random() * 100}vw`;
+        piece.style.background = colors[Math.floor(Math.random() * colors.length)];
+        piece.style.animationDuration = `${2.4 + Math.random() * 2.8}s`;
+        piece.style.animationDelay = `${Math.random() * .8}s`;
+        piece.style.transform = `rotate(${Math.random() * 360}deg)`;
+        document.body.appendChild(piece);
+        setTimeout(() => piece.remove(), 6500);
+      }
+    }
+  </script>
+</body>
+</html>
