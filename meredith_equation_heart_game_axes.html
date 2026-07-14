@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Meredith Equation Game</title>
+<style>
+:root{--pink:#f36aa0;--deep:#8d1748;--light:#fff5f9;--ink:#4d2032}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;overflow:hidden;font-family:system-ui,-apple-system,sans-serif;color:var(--ink);background:linear-gradient(155deg,#fff8fb,#f8d7e5)}
+body{min-height:100svh;display:grid;place-items:center;padding:max(12px,env(safe-area-inset-top)) max(12px,env(safe-area-inset-right)) max(16px,env(safe-area-inset-bottom)) max(12px,env(safe-area-inset-left))}
+.card{width:min(94vw,430px);height:min(92svh,760px);min-height:590px;background:rgba(255,255,255,.86);border:1px solid rgba(141,23,72,.12);border-radius:28px;box-shadow:0 20px 55px rgba(99,24,57,.18);padding:18px;display:flex;flex-direction:column;align-items:center;position:relative;overflow:hidden}
+h1{margin:4px 0 2px;font-size:clamp(23px,6vw,34px);text-align:center;line-height:1.08;color:var(--deep)}
+.sub{margin:5px 0 8px;font-size:clamp(13px,3.6vw,16px);text-align:center}
+.eq{font-family:Georgia,serif;font-size:clamp(15px,4vw,20px);color:var(--deep);text-align:center}
+canvas{display:block;width:min(76vw,320px);height:min(76vw,320px);max-height:34svh}
+.prompt{margin:2px 8px 10px;font-size:clamp(18px,5vw,25px);font-weight:750;text-align:center;color:var(--deep);opacity:0;transform:translateY(8px);transition:.6s}
+.prompt.show,.details.show{opacity:1;transform:none}
+.details{text-align:center;font-size:clamp(13px,3.6vw,16px);line-height:1.4;margin-bottom:10px;opacity:0;transition:.6s .15s}
+.arena{width:100%;flex:1;min-height:92px;position:relative}
+button{border:0;border-radius:999px;padding:13px 24px;font-size:17px;font-weight:800;cursor:pointer;box-shadow:0 8px 18px rgba(91,29,53,.18);-webkit-tap-highlight-color:transparent}
+#yes{position:absolute;left:15%;bottom:12px;background:linear-gradient(135deg,var(--pink),var(--deep));color:#fff}
+#no{position:absolute;right:15%;bottom:12px;background:#fff;color:var(--deep);border:2px solid #e8a9c1;transition:left .13s,top .13s}
+.hidden{display:none!important}
+.success{position:absolute;inset:0;display:grid;place-items:center;padding:30px;text-align:center;background:linear-gradient(155deg,#fff8fb,#f4c8da);z-index:10}
+.success h2{font-size:clamp(32px,9vw,48px);color:var(--deep);margin:0 0 10px}
+.success p{font-size:clamp(17px,4.5vw,22px);line-height:1.45;margin:0}
+.petal{position:fixed;width:12px;height:18px;border-radius:70% 20% 70% 20%;background:var(--pink);pointer-events:none;z-index:20;animation:fall 2.4s linear forwards}
+@keyframes fall{to{transform:translate(var(--dx),105vh) rotate(720deg);opacity:.1}}
+@media(max-height:670px){.card{min-height:0;height:96svh;padding:12px}canvas{max-height:31svh}button{padding:10px 20px}}
+</style>
+</head>
+<body>
+<main class="card">
+<h1>Meredith, I plotted something for you…</h1>
+<div class="sub">Engineer romance may be slightly overcomplicated.</div>
+<div class="eq">(x² + y² − 1)³ − x²y³ = 0</div>
+<canvas id="plot" width="640" height="640"></canvas>
+<div id="prompt" class="prompt">Will you go to Belly Up with me?</div>
+<div id="details" class="details">Monophonics + Kendra Morris<br>Thursday, July 23 · 8:00 PM</div>
+<div id="arena" class="arena"><button id="yes">Yes</button><button id="no">No</button></div>
+<section id="success" class="success hidden"><div><h2>Perfect. 💗</h2><p>It’s a date.<br>Music, flowers, and one mathematically inevitable answer.</p></div></section>
+</main>
+<script>
+const c=document.getElementById('plot'),x=c.getContext('2d'),W=c.width,H=c.height;
+const xmin=-1.55,xmax=1.55,ymin=-1.45,ymax=1.55,N=155,segments=[];
+const f=(a,b)=>Math.pow(a*a+b*b-1,3)-a*a*Math.pow(b,3);
+const px=a=>(a-xmin)/(xmax-xmin)*W,py=b=>H-(b-ymin)/(ymax-ymin)*H;
+for(let i=0;i<N;i++){let x1=xmin+(xmax-xmin)*i/N,x2=xmin+(xmax-xmin)*(i+1)/N;
+for(let j=0;j<N;j++){let y1=ymin+(ymax-ymin)*j/N,y2=ymin+(ymax-ymin)*(j+1)/N;
+let q=[[x1,y1,f(x1,y1)],[x2,y1,f(x2,y1)],[x2,y2,f(x2,y2)],[x1,y2,f(x1,y2)]],e=[[0,1],[1,2],[2,3],[3,0]],h=[];
+for(const [a,b] of e){let A=q[a],B=q[b];if((A[2]<=0&&B[2]>0)||(A[2]>0&&B[2]<=0)){let t=A[2]/(A[2]-B[2]);h.push([A[0]+t*(B[0]-A[0]),A[1]+t*(B[1]-A[1])])}}
+if(h.length>=2)segments.push([h[0],h[1]]);if(h.length===4)segments.push([h[2],h[3]])}}
+function sleep(ms){return new Promise(r=>setTimeout(r,ms));}
+
+function line(ax,ay,bx,by,color,width){
+  x.save();
+  x.shadowBlur=0;
+  x.strokeStyle=color;
+  x.lineWidth=width;
+  x.beginPath();
+  x.moveTo(ax,ay);
+  x.lineTo(bx,by);
+  x.stroke();
+  x.restore();
+}
+
+async function drawGridAndAxes(){
+  x.save();
+  x.font='22px system-ui,-apple-system,sans-serif';
+  x.textAlign='center';
+  x.textBaseline='middle';
+
+  const gridColor='rgba(141,23,72,.10)';
+  const axisColor='rgba(77,32,50,.70)';
+  const tickColor='rgba(77,32,50,.65)';
+  const labelColor='rgba(77,32,50,.78)';
+
+  for(let v=-1.5;v<=1.5001;v+=0.5){
+    if(Math.abs(v)>0.001){
+      line(px(v),py(ymin),px(v),py(ymax),gridColor,1.4);
+      line(px(xmin),py(v),px(xmax),py(v),gridColor,1.4);
+    }
+  }
+
+  await sleep(400);
+
+  const x0=px(0), y0=py(0);
+  const steps=44;
+
+  for(let i=1;i<=steps;i++){
+    const t=i/steps;
+    line(px(xmin+(xmax-xmin)*(t-1/steps)),y0,px(xmin+(xmax-xmin)*t),y0,axisColor,3);
+    await sleep(14);
+  }
+
+  await sleep(180);
+
+  for(let i=1;i<=steps;i++){
+    const t=i/steps;
+    line(x0,py(ymin+(ymax-ymin)*(t-1/steps)),x0,py(ymin+(ymax-ymin)*t),axisColor,3);
+    await sleep(14);
+  }
+
+  const ticks=[];
+  for(let v=-1.5;v<=1.5001;v+=0.5){
+    if(Math.abs(v)>0.001) ticks.push(v);
+  }
+
+  for(const v of ticks){
+    line(px(v),y0-8,px(v),y0+8,tickColor,3);
+    line(x0-8,py(v),x0+8,py(v),tickColor,3);
+
+    x.fillStyle=labelColor;
+    x.fillText(v.toFixed(v%1===0?0:1),px(v),y0+27);
+    x.textAlign='right';
+    x.fillText(v.toFixed(v%1===0?0:1),x0-13,py(v));
+    x.textAlign='center';
+    await sleep(115);
+  }
+
+  x.fillStyle=labelColor;
+  x.font='italic 27px Georgia,serif';
+  x.fillText('x',px(1.46),y0-20);
+  x.fillText('y',x0+20,py(1.44));
+  x.restore();
+}
+
+async function drawHeart(){
+  x.lineWidth=8;
+  x.lineCap='round';
+  x.lineJoin='round';
+  x.strokeStyle='#b51f5f';
+  x.shadowColor='rgba(181,31,95,.22)';
+  x.shadowBlur=10;
+
+  const DRAW_DELAY=55;
+  for(let k=0;k<segments.length;k++){
+    const [a,b]=segments[k];
+    x.beginPath();
+    x.moveTo(px(a[0]),py(a[1]));
+    x.lineTo(px(b[0]),py(b[1]));
+    x.stroke();
+    await sleep(DRAW_DELAY);
+  }
+
+  prompt.classList.add('show');
+  details.classList.add('show');
+}
+
+async function startPlot(){
+  await sleep(450);
+  await drawGridAndAxes();
+  await sleep(650);
+  await drawHeart();
+}
+
+startPlot();
+const yes=document.getElementById('yes'),no=document.getElementById('no'),arena=document.getElementById('arena'),success=document.getElementById('success');
+function moveNo(){let aw=arena.clientWidth,ah=arena.clientHeight,bw=no.offsetWidth,bh=no.offsetHeight;no.style.right='auto';no.style.bottom='auto';no.style.left=Math.random()*Math.max(1,aw-bw)+'px';no.style.top=Math.random()*Math.max(1,ah-bh)+'px'}
+['pointerenter','pointerdown','touchstart'].forEach(e=>no.addEventListener(e,a=>{a.preventDefault();moveNo()},{passive:false}));
+yes.onclick=()=>{success.classList.remove('hidden');for(let i=0;i<45;i++){let p=document.createElement('i');p.className='petal';p.style.left=Math.random()*100+'vw';p.style.top='-20px';p.style.setProperty('--dx',(Math.random()*240-120)+'px');p.style.animationDelay=Math.random()*.7+'s';document.body.appendChild(p);setTimeout(()=>p.remove(),3300)}};
+</script>
+</body>
+</html>
